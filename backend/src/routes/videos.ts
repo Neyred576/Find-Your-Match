@@ -65,24 +65,27 @@ router.get('/', (req, res) => {
   }
 });
 
-// POST /api/videos - Upload a new video
+// POST /api/videos - Upload a new video or embed a link
 router.post('/', upload.single('video'), (req, res) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ message: 'No video file provided' });
+    const { title, description, externalUrl } = req.body;
+
+    if (!req.file && !externalUrl) {
+      return res.status(400).json({ message: 'Provide either a video file or an external URL' });
     }
 
-    const { title, description } = req.body;
-    const videoUrl = `/uploads/videos/${req.file.filename}`;
+    const isExternal = !!externalUrl;
+    const videoUrl = isExternal ? externalUrl : `/uploads/videos/${req.file?.filename}`;
 
     const newVideo = {
       _id: Date.now().toString(),
       title: title || 'Untitled Video',
       description: description || '',
       url: videoUrl,
-      filename: req.file.filename,
-      mimetype: req.file.mimetype,
-      size: req.file.size,
+      isExternal,
+      filename: req.file?.filename || null,
+      mimetype: req.file?.mimetype || 'external/link',
+      size: req.file?.size || 0,
       createdAt: new Date().toISOString()
     };
 

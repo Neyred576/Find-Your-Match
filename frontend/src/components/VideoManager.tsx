@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { FiUpload, FiTrash2, FiPlay, FiFilm } from 'react-icons/fi';
+import { FiUpload, FiTrash2, FiPlay, FiFilm, FiLink } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 interface Video {
@@ -9,6 +9,7 @@ interface Video {
   title: string;
   description: string;
   url: string;
+  isExternal?: boolean;
   createdAt: string;
 }
 
@@ -18,6 +19,8 @@ export default function VideoManager() {
   const [uploading, setUploading] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [uploadMode, setUploadMode] = useState<'file' | 'link'>('file');
+  const [externalUrl, setExternalUrl] = useState('');
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -43,17 +46,31 @@ export default function VideoManager() {
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
-    const file = fileInputRef.current?.files?.[0];
-    if (!file) {
-      toast.error('Please select a video file');
-      return;
+    
+    if (uploadMode === 'file') {
+      const file = fileInputRef.current?.files?.[0];
+      if (!file) {
+        toast.error('Please select a video file');
+        return;
+      }
+    } else {
+      if (!externalUrl.trim()) {
+        toast.error('Please enter a valid link');
+        return;
+      }
     }
 
     setUploading(true);
     const formData = new FormData();
-    formData.append('video', file);
     formData.append('title', title);
     formData.append('description', description);
+    
+    if (uploadMode === 'file') {
+      const file = fileInputRef.current?.files?.[0];
+      if (file) formData.append('video', file);
+    } else {
+      formData.append('externalUrl', externalUrl.trim());
+    }
 
     try {
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
@@ -63,9 +80,10 @@ export default function VideoManager() {
       });
 
       if (res.ok) {
-        toast.success('Video uploaded successfully!');
+        toast.success(uploadMode === 'file' ? 'Video uploaded successfully!' : 'Link embedded successfully!');
         setTitle('');
         setDescription('');
+        setExternalUrl('');
         if (fileInputRef.current) fileInputRef.current.value = '';
         fetchVideos();
       } else {
@@ -106,6 +124,23 @@ export default function VideoManager() {
         <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
           <FiUpload className="text-brand-red" /> Upload New Video
         </h3>
+        <div className="flex gap-4 mb-6">
+          <button
+            type="button"
+            onClick={() => setUploadMode('file')}
+            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg border transition-all ${uploadMode === 'file' ? 'border-brand-red bg-brand-red/10 text-brand-red' : 'border-white/10 text-white/50 hover:bg-white/5 hover:text-white'}`}
+          >
+            <FiUpload /> Upload MP4
+          </button>
+          <button
+            type="button"
+            onClick={() => setUploadMode('link')}
+            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg border transition-all ${uploadMode === 'link' ? 'border-brand-red bg-brand-red/10 text-brand-red' : 'border-white/10 text-white/50 hover:bg-white/5 hover:text-white'}`}
+          >
+            <FiLink /> Embed Link
+          </button>
+        </div>
+
         <form onSubmit={handleUpload} className="space-y-4">
           <div>
             <label className="block text-sm text-white/60 mb-1">Title</label>
@@ -127,16 +162,32 @@ export default function VideoManager() {
               placeholder="A brief description..."
             />
           </div>
-          <div>
-            <label className="block text-sm text-white/60 mb-1">Video File</label>
-            <input 
-              type="file" 
-              accept="video/*"
-              ref={fileInputRef}
-              className="block w-full text-sm text-white/60 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-red/10 file:text-brand-red hover:file:bg-brand-red/20 transition-all"
-              required
-            />
-          </div>
+          
+          {uploadMode === 'file' ? (
+            <div>
+              <label className="block text-sm text-white/60 mb-1">Video File</label>
+              <input 
+                type="file" 
+                accept="video/*"
+                ref={fileInputRef}
+                className="block w-full text-sm text-white/60 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-red/10 file:text-brand-red hover:file:bg-brand-red/20 transition-all"
+                required
+              />
+            </div>
+          ) : (
+            <div>
+              <label className="block text-sm text-white/60 mb-1">Embed URL (Website, YouTube, Movies, etc)</label>
+              <input 
+                type="url" 
+                value={externalUrl}
+                onChange={(e) => setExternalUrl(e.target.value)}
+                className="w-full bg-dark-900 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-brand-red"
+                placeholder="https://..."
+                required
+              />
+            </div>
+          )}
+
           <div className="flex flex-col md:flex-row gap-3 pt-2">
             <button 
               type="submit" 
@@ -155,6 +206,7 @@ export default function VideoManager() {
               onClick={() => {
                 setTitle('');
                 setDescription('');
+                setExternalUrl('');
                 if (fileInputRef.current) fileInputRef.current.value = '';
               }}
               className="flex-1 md:flex-none px-8 py-3 rounded-lg border border-red-500/30 text-red-500 hover:bg-red-500/10 flex justify-center items-center gap-2 disabled:opacity-50 transition-colors"
