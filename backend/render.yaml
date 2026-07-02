@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: find-your-match-backend
+    env: node
+    rootDir: backend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 5000
+      - key: FRONTEND_URL
+        value: https://your-frontend-url.netlify.app
+      - key: ADMIN_PASSWORD_HASH
+        value: Prosper@090021
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FIREBASE_PROJECT_ID
+        sync: false
+      - key: FIREBASE_CLIENT_EMAIL
+        sync: false
+      - key: FIREBASE_PRIVATE_KEY
+        sync: false

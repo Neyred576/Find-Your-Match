@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_BACKEND_URL=http://localhost:5000
+    depends_on:
+      - backend
+
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - FRONTEND_URL=http://localhost:3000
+      - MONGO_URI=mongodb://mongo:27017/findyourmatch
+      - REDIS_URL=redis://redis:6379
+      - ADMIN_PASSWORD_HASH=$2a$10$wE99V9g1Q2Y8yqB31x/i8ue1c4R2o8FmP6j8t4x7yZ2qQ2Y8yqB31x/i8ue1
+      - JWT_SECRET=super_secret_jwt_key_change_in_production
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
