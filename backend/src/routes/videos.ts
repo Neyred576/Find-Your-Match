@@ -113,10 +113,12 @@ router.delete('/:id', (req, res) => {
 
     const video = videos[videoIndex];
 
-    // Delete the physical file
-    const filePath = path.join(uploadDir, video.filename);
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
+    // Only delete the physical file if it's an uploaded file (not an external link)
+    if (!video.isExternal && video.filename) {
+      const filePath = path.join(uploadDir, video.filename);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
     }
 
     videos.splice(videoIndex, 1);

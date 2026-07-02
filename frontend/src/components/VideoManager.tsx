@@ -219,7 +219,7 @@ export default function VideoManager() {
 
       <div className="glass-card p-6">
         <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-          <FiFilm className="text-brand-red" /> Uploaded Videos
+          <FiFilm className="text-brand-red" /> Published Videos & Links
         </h3>
         
         {loading ? (
@@ -236,20 +236,36 @@ export default function VideoManager() {
             {videos.map(video => (
               <div key={video._id} className="bg-dark-900 border border-white/5 rounded-xl overflow-hidden group">
                 <div className="aspect-video bg-black relative flex items-center justify-center">
-                  <FiPlay className="text-3xl text-white/30 group-hover:text-brand-red group-hover:scale-110 transition-all" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
-                  <span className="absolute bottom-2 left-3 text-xs font-bold text-white/80 line-clamp-1 max-w-[80%]">
-                    {video.title}
-                  </span>
+                  {video.isExternal || (video.url && video.url.startsWith('http')) ? (
+                    <>
+                      <FiLink className="text-3xl text-white/30 group-hover:text-brand-red group-hover:scale-110 transition-all" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                      <span className="absolute top-2 left-3 bg-brand-red/80 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Embedded Link</span>
+                      <span className="absolute bottom-2 left-3 right-3 text-xs font-bold text-white/80 line-clamp-1">
+                        {video.title}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <FiPlay className="text-3xl text-white/30 group-hover:text-brand-red group-hover:scale-110 transition-all" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                      <span className="absolute bottom-2 left-3 text-xs font-bold text-white/80 line-clamp-1 max-w-[80%]">
+                        {video.title}
+                      </span>
+                    </>
+                  )}
                 </div>
-                <div className="p-4 flex justify-between items-center">
-                  <div className="text-xs text-white/40">
-                    {new Date(video.createdAt).toLocaleDateString()}
+                <div className="p-4 flex justify-between items-start gap-2">
+                  <div className="min-w-0">
+                    <div className="text-xs text-white/40">{new Date(video.createdAt).toLocaleDateString()}</div>
+                    {(video.isExternal || (video.url && video.url.startsWith('http'))) && (
+                      <div className="text-xs text-brand-red/70 truncate max-w-[180px] mt-1" title={video.url}>{video.url}</div>
+                    )}
                   </div>
                   <button 
                     onClick={() => setDeleteConfirmId(video._id)}
-                    className="p-2 text-white/40 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                    title="Delete video"
+                    className="flex-shrink-0 p-2 text-white/40 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                    title="Delete"
                   >
                     <FiTrash2 />
                   </button>
