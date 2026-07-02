@@ -7,20 +7,18 @@ import { FiLock, FiArrowRight } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 export default function AdminLogin() {
-  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!password) return;
 
     setLoading(true);
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({}),
       });
 
       const data = await res.json();
@@ -61,28 +59,14 @@ export default function AdminLogin() {
           <h2 className="text-2xl font-bold text-center mb-6">Admin Access</h2>
           
           <form onSubmit={handleLogin} className="flex flex-col gap-4">
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/40">
-                <FiLock />
-              </div>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter admin password"
-                className="input-field pl-12"
-                required
-              />
-            </div>
-            
             <button 
               type="submit" 
-              disabled={loading || !password}
+              disabled={loading}
               className="btn-brand w-full flex justify-center items-center gap-2 mt-2"
             >
               {loading ? 'Authenticating...' : (
                 <>
-                  <span>Login</span>
+                  <span>Enter Dashboard</span>
                   <FiArrowRight />
                 </>
               )}
@@ -90,8 +74,7 @@ export default function AdminLogin() {
           </form>
           
           <p className="text-white/40 text-xs text-center mt-6">
-            This area is restricted to authorized personnel only. 
-            All access attempts are logged.
+            Welcome to the Find Your Match admin control panel.
           </p>
         </div>
       </div>
