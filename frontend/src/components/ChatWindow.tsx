@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 
 interface Message {
   id: string;
-  sender: 'me' | 'partner';
+  sender: 'me' | 'partner' | 'sys';
   text: string;
   timestamp: Date;
 }

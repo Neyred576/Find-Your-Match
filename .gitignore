@@ -29,3 +29,7 @@ yarn-error.log*
 .env.production.local
 backend/.env
 frontend/.env
+
+# uploaded video files (stored on Render's persistent disk in production)
+backend/uploads/videos/
+backend/uploads/videos.json

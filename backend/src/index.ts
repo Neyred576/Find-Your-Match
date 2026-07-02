@@ -6,7 +6,9 @@ import dotenv from 'dotenv';
 import { Server } from 'socket.io';
 import { initializeFirebase } from './config/firebase';
 import { setupSocketHandlers } from './socket';
+import path from 'path';
 import adminRouter from './routes/admin';
+import videosRouter from './routes/videos';
 
 // Load env vars
 dotenv.config();
@@ -18,16 +20,22 @@ const app = express();
 const server = http.createServer(app);
 
 // Security & Middleware
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: false,
+}));
 app.use(cors({
   origin: process.env.FRONTEND_URL || '*',
-  methods: ['GET', 'POST'],
+  methods: ['GET', 'POST', 'DELETE', 'PUT'],
   credentials: true
 }));
 app.use(express.json());
 
+// Serve static files from the uploads directory
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+
 // Routes
 app.use('/api/admin', adminRouter);
+app.use('/api/videos', videosRouter);
 
 // Setup Socket.IO
 const io = new Server(server, {
